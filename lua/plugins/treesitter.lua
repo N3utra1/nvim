@@ -1,8 +1,11 @@
+-- Extra parsers on top of the LazyVim defaults.
+-- `opts_extend = { "ensure_installed" }` in LazyVim's treesitter spec means this
+-- list is appended to the defaults rather than replacing them.
+--
+-- LazyVim extras (lang.*, ui.*) do NOT belong here: importing them from a file
+-- under lua/plugins/ bypasses lazyvim/plugins/xtras.lua, which is what assigns
+-- their load priority. Register them in lazyvim.json instead (or via :LazyExtras).
 return {
-
-  -- { import = "lazyvim.plugins.extras.lang.typescript" },
-
-  -- add more treesitter parsers
   {
     "nvim-treesitter/nvim-treesitter",
     opts = {
@@ -24,10 +27,4 @@ return {
       },
     },
   },
-
-  -- use mini.starter instead of alpha
-  -- { import = "lazyvim.plugins.extras.ui.mini-starter" },
-
-  -- add jsonls and schemastore packages, and setup treesitter for json, json5 and jsonc
-  -- { import = "lazyvim.plugins.extras.lang.json" },
 }
