@@ -8,9 +8,14 @@
 vim.keymap.del({ "n", "x", "o"}, "s")
 
 -- Pickers that escape the project root
-vim.keymap.set("n", "<leader>fh", function()
+local function find_home()
   Snacks.picker.files({ cwd = vim.env.HOME, hidden = true })
-end, { desc = "Find File (home)" })
+end
+
+-- Bound twice: <leader>fh follows the LazyVim habit of a letter per picker,
+-- <leader>f~ reads as the path it opens and mirrors <leader>f/ below.
+vim.keymap.set("n", "<leader>fh", find_home, { desc = "Find File (home)" })
+vim.keymap.set("n", "<leader>f~", find_home, { desc = "Find File (home)" })
 
 vim.keymap.set("n", "<leader>f/", function()
   Snacks.picker.explorer({ cwd = "/", hidden = true })
