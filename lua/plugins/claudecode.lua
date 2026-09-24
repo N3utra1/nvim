@@ -175,5 +175,47 @@ return {
         end)
       end,
     })
+
+    -- Terminal-mode forces 'scrolloff' to 0 (:h terminal), but Terminal-normal mode
+    -- does not, so the global scrolloff of 999 applies when a terminal buffer is
+    -- entered from normal mode -- which is what :bnext/:bprevious ([b and ]b) do.
+    -- Centring the cursor scrolls the view off the tail of the buffer, so the region
+    -- the terminal emulator keeps repainting no longer lines up with what is drawn
+    -- and stale scrollback shows up below it as duplicated lines. Keep scrolloff at 0
+    -- while a terminal buffer is displayed; -1 restores the global value on the way
+    -- out, since the window is shared with ordinary file buffers.
+    local view = vim.api.nvim_create_augroup("claudecode_term_view", { clear = true })
+
+    vim.api.nvim_create_autocmd({ "BufWinEnter", "WinEnter", "TermOpen" }, {
+      group = view,
+      callback = function(ev)
+        if vim.bo[ev.buf].buftype ~= "terminal" then
+          return
+        end
+        vim.wo.scrolloff = 0
+        vim.wo.sidescrolloff = 0
+        -- Entering Claude from the bufferline leaves the window in Terminal-normal
+        -- mode showing a stale view. Terminal-mode pins the view to the cursor and
+        -- makes the running process repaint, which is also the mode you want to be
+        -- in when you switch to the Claude tab.
+        if claude_bufnr() == ev.buf and vim.api.nvim_win_get_config(0).relative == "" then
+          vim.schedule(function()
+            if vim.api.nvim_get_current_buf() == ev.buf then
+              vim.cmd("startinsert")
+            end
+          end)
+        end
+      end,
+    })
+
+    vim.api.nvim_create_autocmd({ "BufLeave", "WinLeave" }, {
+      group = view,
+      callback = function(ev)
+        if vim.bo[ev.buf].buftype == "terminal" then
+          vim.wo.scrolloff = -1
+          vim.wo.sidescrolloff = -1
+        end
+      end,
+    })
   end,
 }
